@@ -492,10 +492,10 @@ i{
 ******************************************************/
 
 @media only screen and (max-width: 1000px) {
-    .filter-user-details {
+    .filter-user-details, .last-message-timestamp {
       display: none;
     }
-    .user-search-area {
+    .user-search-area, .unread-message-counter {
         display: none;
     }
     .app-sidebar{
@@ -517,4 +517,9 @@ i{
   background-color: #e74c3c;
   color: white;
   font-weight: bold;
+}
+.typing-indicator{
+  margin-top: 5px;
+  font-style: italic;
+  color: #555;
 }

@@ -5,7 +5,7 @@ import UserList from "./userList";
 
 
 
-function Sidebar({socket}) {
+function Sidebar({socket, onlineUsers}) {
     const [searchKey, setSearchKey] = useState("");
 
     return(
@@ -15,7 +15,12 @@ function Sidebar({socket}) {
                 setSearchKey={setSearchKey}
             />
 
-            <UserList searchKey={searchKey} socket={socket}></UserList>
+            <UserList 
+                searchKey={searchKey} 
+                socket={socket}
+                onlineUsers = {onlineUsers}
+            >
+            </UserList>
         </div>
     )
 }

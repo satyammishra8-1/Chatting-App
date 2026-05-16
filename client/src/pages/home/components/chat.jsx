@@ -34,6 +34,10 @@ function ChatArea({ socket }) {
   const selectedUser = allusers.find(
     u => u._id === (otherUserId._id ? otherUserId._id : otherUserId)
   );
+  const  [isTyping, setIsTyping] = useState(false);
+
+
+
 
   const sendMessage = async () => {
     try{
@@ -180,13 +184,23 @@ socket.on('message-count-cleared', data => {
   });
 
 })
+
+//show some typing indicator in chat area
+socket.on('started-typing', (data) => {
+  if(data.chatId === selectedChat._id && data.senderId !== user._id){
+    setIsTyping(true);
+    setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+  }
+});
   return () => {
     return () => {
   socket.removeAllListeners("receive-message");
   socket.removeAllListeners("unread-messages-cleared");
 };
   };
-}, [selectedChat]);
+}, [selectedChat,isTyping]);
 
 useEffect(() => {
   const msgContainer = document.getElementById('main-chat-area');
@@ -224,6 +238,7 @@ useEffect(() => {
           </div>
         );
       })}
+      <div className="typing-indicator">{isTyping && <i>typing....</i>}</div>
     </div>
       
 
@@ -233,7 +248,17 @@ useEffect(() => {
           className="send-message-input"
           placeholder="Type a message"
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value)
+            socket.emit('user-typing',{
+              chatId: selectedChat._id,
+              senderId: user._id,
+              members: selectedChat.members.map(m => m._id ? m._id : m)
+
+            })
+            
+          }
+        }
         />
 
         <button

@@ -10,7 +10,7 @@ import { all } from "axios";
 import { useEffect } from "react";
 import store from "../../../redux/store";
 
-function UserList({ searchKey, socket }) {
+function UserList({ searchKey, socket, onlineUsers}) {
 
   const { allusers, allChats, user: currentUser, selectedChat } = useSelector(state => state.usersReducer);
   const dispatch = useDispatch();
@@ -170,11 +170,14 @@ function getData() {
                       src={user.profilePic}
                       alt="Profile Pic"
                       className="user-profile-image"
+                      style={onlineUsers?.includes(user._id) ? {border: '#03f26b 3px solid'} : {}}
                     />
                   )}
 
                   {!user.profilePic && (
-                    <div className={"user-default-avatar"}>
+                    <div className={"user-default-avatar"}
+                    style={onlineUsers?.includes(user._id) ? {border: 'green 3px solid'} : {}}
+                    >
                       {
                         user.firstname.charAt(0).toUpperCase() +
                         user.lastname.charAt(0).toUpperCase()
