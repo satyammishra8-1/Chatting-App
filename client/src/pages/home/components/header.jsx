@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 function Header(){
     const { user } = useSelector(state => state.usersReducer);
-    console.log(user);
+   
 
     function getFullName() {
     if(!user) return "";

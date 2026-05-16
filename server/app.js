@@ -24,7 +24,22 @@ app.use('/api/message', messageRouter);
 
 //test socket connection from client
 io.on('connection', (socket) => {
-     console.log('connected with socket ID:' + socket.id);
-});      
+   socket.on('join-room',userid => {
+     socket.join(userid);
+     
+   });
+   socket.on('send-message', (message) => {
+     console.log(message);
+     io
+     .to(message.members[0])
+     .to(message.members[1])
+     .emit('receive-message', message);
+     });
+     socket.on('clear-unread-messages', data => {
+          io.to(data.members[0])
+          .to(data.members[1])
+          .emit('unread-messages-cleared', data);
+     });
+});  
 
 module.exports = server;

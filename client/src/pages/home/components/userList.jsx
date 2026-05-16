@@ -7,8 +7,10 @@ import { showLoader } from "../../../redux/loaderSlice";
 import { setAllChats, setSelectedChat } from "../../../redux/usersSlice";
 import moment from "moment";
 import { all } from "axios";
+import { useEffect } from "react";
+import store from "../../../redux/store";
 
-function UserList({ searchKey }) {
+function UserList({ searchKey, socket }) {
 
   const { allusers, allChats, user: currentUser, selectedChat } = useSelector(state => state.usersReducer);
   const dispatch = useDispatch();
@@ -89,6 +91,35 @@ function formatName(user) {
   let lname = user.lastname.at(0).toUpperCase() + user.lastname.slice(1).toLowerCase();
   return fname + " " + lname;
 }
+
+useEffect(() => {
+  socket.on('receive-message', (message) => {
+    const selectedChat = store.getState().usersReducer.selectedChat;
+    let allChats = store.getState().usersReducer.allChats;
+
+    if(selectedChat?._id !== message.chatId){
+      const updatedChats = allChats.map(chat => {
+        if(chat._id === message.chatId){
+          return { 
+            ...chat, 
+            unreadMessageCount: (chat.unreadMessageCount || 0) + 1,
+            lastMessage: message
+          };
+        }
+        return chat;
+      });
+      allChats = updatedChats;
+    }
+    //1.find the latest chat data from store
+    const latesrChat = allChats.find(chat => chat._id === message.chatId);
+    //2.update the latest chat with new message data and increment unread count
+    const otherChats = allChats.filter(chat => chat._id !== message.chatId);
+    //3.create an new array latest chat on the top and other chats down
+    allChats = [latesrChat, ...otherChats];
+    dispatch(setAllChats(allChats));
+    
+  });
+}, []);
 
 const getUnreadMessageCount = (userId) => {
   const chat = allChats.find(chat =>
