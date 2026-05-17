@@ -20,11 +20,6 @@ function ChatArea({ socket }) {
   const [allMessages, setAllMessages] = useState([]);
 
 
-  // Prevent crash when page loads
-  if (!selectedChat) {
-    return <div className="app-chat-area"></div>;
-  }
-
   // get the other user's id from chat members
   const otherUserId = selectedChat.members.find(
     member => (member._id ? member._id : member) !== user._id
@@ -225,6 +220,10 @@ useEffect(() => {
   msgContainer.scrollTop = msgContainer.scrollHeight;
 },[allMessages]);
 
+// Prevent crash when page loads
+  if (!selectedChat) {
+    return <div className="app-chat-area"></div>;
+  }
 
   return (
     <div className="app-chat-area">
