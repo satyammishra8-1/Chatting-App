@@ -1,8 +1,9 @@
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function Header(){
     const { user } = useSelector(state => state.usersReducer);
-   
+    const navigate = useNavigate();
 
     function getFullName() {
     if(!user) return "";
@@ -27,7 +28,10 @@ function getInitials(){
 
             <div className="app-user-profile">
                 <div className="logged-user-name">{getFullName()}</div>
-                <div className="logged-user-profile-pic">{getInitials()}</div>
+                {user?.profilePic && <img src={user?.profilePic} alt="profile-pic" className='logged-user-profile-pic' />}
+                {!user?.profilePic && <div className="logged-user-profile-pic" onClick={() => navigate('/profile')}>
+                    {getInitials()}
+                </div>}
             </div>
         </div>
     );
