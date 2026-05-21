@@ -71,28 +71,47 @@ route.post('/new-message', authMiddleware, async (req, res) => {
 });
 
 // Route to get all messages of a chat
-route.get('/get-all-messages/:chatId' , authMiddleware, async(req, res) => {
+route.get('/get-all-messages/:chatId', authMiddleware, async (req, res) => {
+
     try {
+
+        // Fetch messages
         const allMessages = await Message.find({
-                    chatId: req.params.chatId,
-                    $or: [
-                        { isScheduled: false },
-                        { isDelivered: true },
-                        { sender: req.userId }
-                    ]
-                }).sort({ createdAt: 1 });
+            chatId: req.params.chatId,
+            $or: [
+                { isScheduled: false },
+                { isDelivered: true },
+                { sender: req.userId }
+            ]
+        }).sort({ createdAt: 1 });
+
+
+        // Mark received messages as read
+        await Message.updateMany(
+            {
+                chatId: req.params.chatId,
+                sender: { $ne: req.userId },
+                read: false
+            },
+            {
+                $set: { read: true }
+            }
+        );
+
+
         res.send({
-            message: 'Messages fetched successfuly',
+            message: 'Messages fetched successfully',
             success: true,
             data: allMessages
-        })
-        
+        });
+
     } catch (error) {
+
         res.status(400).send({
             message: error.message,
             success: false
-           
-        })
+        });
+
     }
 });
 

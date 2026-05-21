@@ -112,6 +112,7 @@ recognition.onerror = (event) => {
             ...response.data,
             members: selectedChat.members.map(m => m._id ? m._id : m),
           });
+        setAllMessages(prev => [...prev, response.data]);
 
        }
 
@@ -122,7 +123,7 @@ recognition.onerror = (event) => {
       setShowScheduleModal(false);
       setShowEmojiPicker(false);
 
-     if(!scheduleDateTime){
+     if(scheduleDateTime){
 
         setAllMessages(prev => [...prev, {
           ...newMessage,
@@ -196,6 +197,7 @@ const clearUnreadMessage  = async () => {
       });
 
       dispatch(setAllChats(updatedChats));
+
     }
 
   }catch(error){
@@ -224,6 +226,7 @@ function sendImage(e) {
 
 
 useEffect(() => {
+
   getMessages();
 
   if (selectedChat?.lastMessage?.sender !== user._id) {
@@ -232,69 +235,117 @@ useEffect(() => {
 
   socket.off('receive-message').on("receive-message", async (message) => {
 
-  const selectedChat = store.getState().usersReducer.selectedChat;
+    const selectedChat = store.getState().usersReducer.selectedChat;
 
-  if(message.chatId === selectedChat._id){
+    // Update unread counts for all chats
+   const currentChats = store.getState().usersReducer.allChats;
 
-    setAllMessages((prevmsg) => {
+const updatedChats = currentChats.map(chat => {
 
-            const filteredMessages = prevmsg.filter(
-              msg =>
-                !(
-                  msg.isScheduled &&
-                  !msg.isDelivered &&
-                  msg.text === message.text &&
-                  msg.sender === message.sender
-                )
-            );
+  if(String(chat._id) === String(message.chatId)){
 
-            return [...filteredMessages, message];
-          });
-
-  }
-
-  if(selectedChat._id === message.chatId && message.sender !== user._id){
-    clearUnreadMessage();
-  }
-})
-
-socket.on('message-count-cleared', data => {
-
-  const allChats = store.getState().usersReducer.allChats;
-
-  const updatedChats = allChats.map(chat => {
-    if(chat._id === data.chatId){
-      return { ...chat, unreadMessageCount: 0 };
-    }
-    return chat;
-  });
-
-  dispatch(setAllChats(updatedChats));
-
-  setAllMessages(prevMsg => {
-    return prevMsg.map(msg => {
-      return { ...msg, read: true };
-    });
-  });
-
-})
-
-//show some typing indicator in chat area
-socket.off('started-typing').on('started-typing', (data) => {
-
-  if(data.chatId === selectedChat._id && data.senderId !== user._id){
-
-    setIsTyping(true);
-
-    setTimeout(() => {
-      setIsTyping(false);
-    }, 1200);
-  }
-});
-    return () => {
-      socket.removeAllListeners("receive-message");
-      socket.removeAllListeners("unread-messages-cleared");
+    return {
+      ...chat,
+      lastMessage: message,
+      unreadMessageCount:
+        String(selectedChat._id) === String(message.chatId)
+          ? 0
+          : (chat.unreadMessageCount || 0) + 1
     };
+  }
+
+  return chat;
+});
+
+dispatch(setAllChats(updatedChats));
+
+
+    // Update messages only for opened chat
+    if(String(message.chatId) === String(selectedChat._id)){
+
+      setAllMessages((prevmsg) => {
+
+        const filteredMessages = prevmsg.filter(
+          msg =>
+            !(
+              msg.isScheduled &&
+              !msg.isDelivered &&
+              msg.text === message.text &&
+              msg.sender === message.sender
+            )
+        );
+
+        return [...filteredMessages, message];
+      });
+
+    }
+
+    // Clear unread if receiver is inside same chat
+    if(
+      String(selectedChat._id) === String(message.chatId) &&
+      message.sender !== user._id
+    ){
+      clearUnreadMessage();
+    }
+
+  });
+
+  socket.on('message-count-cleared', data => {
+
+    const allChats = store.getState().usersReducer.allChats;
+
+    const updatedChats = allChats.map(chat => {
+
+      if(String(chat._id) === String(data.chatId)){
+        return { ...chat, unreadMessageCount: 0 };
+      }
+
+      return chat;
+    });
+
+    dispatch(setAllChats(updatedChats));
+
+    // Update ticks
+    setAllMessages(prevMsg => {
+
+      return prevMsg.map(msg => {
+
+        if(
+          msg.sender === user._id &&
+          String(msg.chatId) === String(data.chatId)
+        ){
+          return { ...msg, read: true };
+        }
+
+        return msg;
+      });
+    });
+
+  });
+
+  // typing indicator
+  socket.off('started-typing').on('started-typing', (data) => {
+
+    if(
+      String(data.chatId) === String(selectedChat._id) &&
+      data.senderId !== user._id
+    ){
+
+      setIsTyping(true);
+
+      setTimeout(() => {
+        setIsTyping(false);
+      }, 1200);
+    }
+  });
+
+  return () => {
+    socket.removeAllListeners("receive-message");
+    socket.removeAllListeners("unread-messages-cleared");
+    socket.removeAllListeners("message-count-cleared");
+    socket.removeAllListeners("started-typing");
+  };
+
 }, [selectedChat]);
 
 useEffect(() => {
@@ -348,11 +399,17 @@ useEffect(() => {
                   {msg.image && <img src={msg.image} alt="image" height="120" width="120" />}
                 </div>
                 </div>
-              <div className="message-timestamp" style={isCurrentUserSender ? { float: "right" } : { float: "left" }}>
-                {formateTime(msg.deliveredAt || msg.createdAt)} {isCurrentUserSender && msg.read &&  
-                <i className="fa fa-check-circle" aria-hidden="true" style={{ color: "#e7c3c" }}></i>
-                }
-              </div>
+            <div className="message-timestamp" style={isCurrentUserSender ? { float: "right" } : { float: "left" }}>
+              {formateTime(msg.deliveredAt || msg.createdAt)}
+
+              {isCurrentUserSender && msg.read &&  
+                <i
+                  className="fa fa-check"
+                  aria-hidden="true"
+                  style={{ marginLeft: "5px", color: "#2196F3" }}
+                ></i>
+              }
+            </div>
             </div>
           </div>
         );

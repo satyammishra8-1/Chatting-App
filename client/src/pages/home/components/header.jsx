@@ -21,11 +21,16 @@ function getInitials(){
 
 const logout = () => {
 
-     socket.emit('user-offline', user._id);
-    localStorage.removeItem("token");
-    socket.disconnect();
-    navigate('/login');
-   
+    const confirmLogout = window.confirm(
+        "Are you sure you want to logout?"
+    );
+
+    if(confirmLogout){
+
+        localStorage.removeItem("token");
+
+        navigate('/login');
+    }
 }
 
     return(
