@@ -1,7 +1,22 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 function Header({socket}) {
+
+    const [theme, setTheme] = useState(
+        localStorage.getItem("theme") || "dark"
+    );
+
+    useEffect(() => {
+            if(theme === "light"){
+                document.body.classList.add("light-theme");
+            }else{
+                document.body.classList.remove("light-theme");
+            }
+        }, [theme]);
+
+
     const { user } = useSelector(state => state.usersReducer);
     const navigate = useNavigate();
 
@@ -46,9 +61,32 @@ const logout = () => {
                     {getInitials()}
                 </div>}
                 <div className="logged-user-name">{getFullName()}</div>
-                <button  className = "logout-button" onClick={logout}>
-                    <i className="fa fa-power-off"></i>
-                </button>
+                <button className="theme-toggle-btn"
+                        onClick={() => {
+
+                            const newTheme =
+                                theme === "dark"
+                                ? "light"
+                                : "dark";
+
+                            setTheme(newTheme);
+
+                            localStorage.setItem(
+                                "theme",
+                                newTheme
+                            );
+
+                            document.body.className =
+                                newTheme === "light"
+                                ? "light-theme"
+                                : "";
+                        }}
+                    >
+                    </button>
+
+                    <button className="logout-button" onClick={logout}>
+                        <i className="fa fa-power-off"></i>
+                    </button>
                 
             </div>
         </div>

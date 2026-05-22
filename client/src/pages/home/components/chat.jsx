@@ -23,7 +23,6 @@ function ChatArea({ socket }) {
   const [message, setMessage] = useState("");
   const [allMessages, setAllMessages] = useState([]);
 
-
   // get the other user's id from chat members
   const otherUserId = selectedChat.members.find(
     member => (member._id ? member._id : member) !== user._id
@@ -41,6 +40,7 @@ function ChatArea({ socket }) {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [liveTranscript, setLiveTranscript] = useState("");
 
   const isChrome = /Chrome/.test(navigator.userAgent);
 
@@ -52,10 +52,11 @@ function ChatArea({ socket }) {
   recognition.lang = "en-US";
   recognition.interimResults = false;
 
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-    setMessage(transcript);
-  };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setLiveTranscript(transcript);
+        setMessage(transcript);
+      };
 
   recognition.onstart = () => {
   setIsListening(true);
@@ -615,6 +616,26 @@ useEffect(() => {
         </div>
       </div>
     )}
+
+      {isListening && (
+
+          <div className="voice-popup">
+
+            <div className="voice-popup-mic">
+              <FaMicrophone />
+            </div>
+
+            <div className="voice-popup-text">
+              Listening...
+            </div>
+
+            <div className="voice-popup-transcript">
+              {liveTranscript}
+            </div>
+
+          </div>
+
+        )}
 
     </div>
   );
