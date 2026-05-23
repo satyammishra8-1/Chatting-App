@@ -1,5 +1,6 @@
 import { axiosInstance, url } from "./index";
 
+
 //signup user
 export const signupUser = async (user) => {
     try {
@@ -28,6 +29,37 @@ export const googleLogin = async (user) => {
         const response = await axiosInstance.post(
             '/api/auth/google-login',
             user
+        );
+
+        return response.data;
+
+    } catch (error) {
+        return error;
+    }
+};
+
+// Send OTP API call
+export const sendOTP = async (email) => {
+    try {
+
+        const response = await axiosInstance.post(
+            url + '/api/otp/send-otp',
+            { email }
+        );
+
+        return response.data;
+
+    } catch (error) {
+        return error;
+    }
+};
+// Verify OTP API call
+export const verifyOTP = async (data) => {
+    try {
+
+        const response = await axiosInstance.post(
+            url + '/api/otp/verify-otp',
+            data
         );
 
         return response.data;

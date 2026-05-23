@@ -786,9 +786,12 @@ i{
 .message-timestamp{
  width: fit-content;
  font-size: 13px;
+ color: var(--text-secondary);
 }
+
 .last-message-timestamp{
   font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .message-dropdown{
@@ -1413,4 +1416,121 @@ input[type="file"]::file-selector-button:active {
 
 .light-theme .cancel-logout-btn:hover{
     background: rgba(0,0,0,0.1);
+}
+
+.received-message{
+    position: relative;
+}
+
+.message-reaction{
+    position: absolute;
+    bottom: -10px;
+    left: 8px;
+    font-size: 18px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.received-message{
+    position: relative;
+    user-select: none;
+}
+
+/* OTP MODAL */
+
+.otp-modal-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.otp-modal{
+  width: 400px;
+  background: #111827;
+  border-radius: 24px;
+  padding: 35px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0,0,0,0.45);
+  animation: popupAnimation 0.25s ease;
+}
+
+.otp-modal h2{
+  color: white;
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.otp-modal p{
+  color: #9CA3AF;
+  font-size: 15px;
+  margin-bottom: 25px;
+  line-height: 22px;
+}
+
+.otp-input{
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #1F2937;
+  color: white;
+  outline: none;
+  font-size: 20px;
+  text-align: center;
+  letter-spacing: 8px;
+}
+
+.otp-input::placeholder{
+  color: #9CA3AF;
+}
+
+.verify-otp-btn{
+  width: 100%;
+  margin-top: 25px;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(to right,#6D5DFC,#8B5CF6);
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.verify-otp-btn:hover{
+  transform: scale(1.02);
+}
+
+.resend-text{
+  color: white;
+  margin-top: 20px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.resend-btn{
+  color: #8B5CF6;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+@keyframes popupAnimation{
+  from{
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to{
+    transform: scale(1);
+    opacity: 1;
+  }
 }

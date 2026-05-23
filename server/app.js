@@ -18,6 +18,8 @@ const messageRouter = require('./controllers/messageController');
 const user = require('./modules/user');
 const startScheduledMessagesCron = require('./cron/scheduledMessages');
 require('dotenv').config();
+const sendEmail = require('./utils/sendEmail');
+const otpRouter = require('./controllers/otpController');
 
 app.use(express.json({
      limit: '50mb'
@@ -39,7 +41,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/chat',chatRouter);
 app.use('/api/message', messageRouter);
-
+app.use('/api/otp', otpRouter);
 const onlineUsers =[];
 
 //test socket connection from client
@@ -99,5 +101,6 @@ io.on('connection', (socket) => {
 });  
 
 startScheduledMessagesCron(io);
+
 
 module.exports = server;

@@ -27,6 +27,10 @@ const messageScema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    reaction:{
+        type:String,
+        default:""
+     },
     deletedFor: {
         type: [String],
         default: []

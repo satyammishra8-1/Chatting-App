@@ -52,10 +52,11 @@ function ChatArea({ socket }) {
   recognition.interimResults = false;
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setLiveTranscript(transcript);
-        setMessage(transcript);
-      };
+      const transcript =
+        event.results[event.results.length - 1][0].transcript;
+      setLiveTranscript(transcript);
+      setMessage(transcript);
+  };
 
   recognition.onstart = () => {
   setIsListening(true);
@@ -406,6 +407,29 @@ useEffect(() => {
     return <div className="app-chat-area"></div>;
   }
 
+  // Add reaction to message
+const addReaction = (messageId) => {
+
+    setAllMessages((prev) =>
+
+        prev.map((msg) => {
+
+            if(msg._id === messageId){
+
+                return {
+                    ...msg,
+                    reaction:
+                        msg.reaction === "❤️"
+                        ? ""
+                        : "❤️"
+                };
+            }
+
+            return msg;
+        })
+    );
+};
+
   return (
     <div className="app-chat-area">
 
@@ -426,7 +450,25 @@ useEffect(() => {
             className="message-container"
             style={isCurrentUserSender ? { justifyContent: "end" } : { justifyContent: "start" }}>
             <div>
-             <div className={isCurrentUserSender ? "send-message" : "received-message"}>
+             <div
+                className={isCurrentUserSender ? "send-message" : "received-message"}
+                onDoubleClick={(e) => {
+                      e.preventDefault();
+                      if(!isCurrentUserSender){
+                          addReaction(msg._id);
+                      }
+                  }}
+              >
+               
+
+                {
+                      msg.reaction && (
+
+                          <div className="message-reaction">
+                              {msg.reaction}
+                          </div>
+                      )
+                  }
 
               <div className="message-content">
 
@@ -528,16 +570,24 @@ useEffect(() => {
           placeholder="Type a message"
           value={message}
           onChange={(e) => {
-            setMessage(e.target.value)
-            socket.emit('user-typing',{
-              chatId: selectedChat._id,
-              senderId: user._id,
-              members: selectedChat.members.map(m => m._id ? m._id : m)
+              setMessage(e.target.value)
 
-            })
-            
-          }
-        }
+              socket.emit('user-typing',{
+                chatId: selectedChat._id,
+                senderId: user._id,
+                members: selectedChat.members.map(
+                  m => m._id ? m._id : m
+                )
+              })
+          }}
+
+          onKeyDown={(e) => {
+
+              if(e.key === "Enter"){
+
+                  sendMessage();
+              }
+          }}
         />
         <label htmlFor="file">
           <i className="fa fa-picture-o send-image-btn"></i>
