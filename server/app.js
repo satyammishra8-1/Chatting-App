@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors({
    origin:[
-               "https://chatting-app-git-main-satyam-mishras-projects-a4cffc01.vercel.app",
+               "https://chatting-app-gamma-blue.vercel.app/",
                "http://localhost:3000",
                "http://localhost:3001",
                "http://192.168.1.51:3001"
@@ -27,7 +27,7 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
      cors: {
           origin:[
-                    "https://chatting-app-git-main-satyam-mishras-projects-a4cffc01.vercel.app",
+                    "https://chatting-app-gamma-blue.vercel.app/",
                     "http://localhost:3000",
                     "http://localhost:3001",
                     "http://192.168.1.51:3001"
