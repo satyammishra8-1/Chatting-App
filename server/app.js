@@ -41,6 +41,7 @@ app.use('/api/user', userRouter);
 app.use('/api/chat',chatRouter);
 app.use('/api/message', messageRouter);
 app.use('/api/otp', otpRouter);
+
 const onlineUsers =[];
 
 //test socket connection from client
@@ -57,6 +58,7 @@ io.on('connection', (socket) => {
      .emit('receive-message', message);
      });
 
+     // New event for message deletion
      socket.on('message-deleted', (data) => {
 
           io.to(data.members[0])
@@ -64,18 +66,28 @@ io.on('connection', (socket) => {
           .emit('message-deleted', data);
 
           });
-
+     // New event for clearing unread messages
      socket.on('clear-unread-messages', data => {
           io.to(data.members[0])
           .to(data.members[1])
           .emit('unread-messages-cleared', data);
      });
+
+     // New event for typing indicator
      socket.on('user-typing', (data) => {
           io.to(data.members[0])
           .to(data.members[1])
           .emit('started-typing', data);
-     })
+     });
 
+     // New event for message reaction
+     socket.on('message-reacted', (data) => {
+     io.to(data.members[0])
+     .to(data.members[1])
+     .emit('message-reaction-updated', data);
+     });
+
+     // New event for online status
     socket.on('user-login', (userId) => {
 
                if (!onlineUsers.includes(userId)) {

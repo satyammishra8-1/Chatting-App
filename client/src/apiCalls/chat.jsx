@@ -26,3 +26,22 @@ export const clearUnreadMessages = async (chatId) => {
         return error;
     }
 }
+
+export const deleteChatForMe = async (chatId) => {
+
+    try {
+
+        const response = await axiosInstance.post(
+            url + "/api/chat/delete-chat-for-me",
+            { chatId }
+        );
+
+        return response.data;
+
+    } catch (error) {
+
+        return error.response.data;
+
+    }
+
+};

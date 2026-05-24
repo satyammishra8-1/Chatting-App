@@ -9,6 +9,7 @@ import { setAllChats } from "../../../redux/usersSlice";
 import store from "./../../../redux/store";
 import EmojiPicker from "emoji-picker-react";
 import { FaMicrophone } from "react-icons/fa";
+import { reactToMessage } from "../../../apiCalls/message";
 
 
 
@@ -40,6 +41,7 @@ function ChatArea({ socket }) {
   const [scheduledTime, setScheduledTime] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [liveTranscript, setLiveTranscript] = useState("");
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
 
   const isChrome = /Chrome/.test(navigator.userAgent);
 
@@ -375,6 +377,7 @@ dispatch(setAllChats(updatedChats));
     }
   });
 
+  // Listen for message deletion
   socket.on('message-deleted', async () => {
 
   const updatedResponse = await getAllMessages(selectedChat._id);
@@ -382,6 +385,30 @@ dispatch(setAllChats(updatedChats));
   if(updatedResponse.success){
     setAllMessages(updatedResponse.data);
   }
+
+});
+
+// Listen for message reaction updates
+socket.on('message-reaction-updated', (data) => {
+
+  setAllMessages(prevMsg => {
+
+    return prevMsg.map(msg => {
+
+      if(msg._id === data.messageId){
+
+        return {
+          ...msg,
+          reaction: data.reaction
+        };
+
+      }
+
+      return msg;
+
+    });
+
+  });
 
 });
 
@@ -408,26 +435,42 @@ useEffect(() => {
   }
 
   // Add reaction to message
-const addReaction = (messageId) => {
+const addReaction = async (messageId, emoji) => {
 
-    setAllMessages((prev) =>
+    const response = await reactToMessage({
+        messageId,
+        reaction: emoji
+    });
 
-        prev.map((msg) => {
+    if(response.success){
+
+        const updatedMessages = allMessages.map((msg) => {
 
             if(msg._id === messageId){
 
                 return {
                     ...msg,
-                    reaction:
-                        msg.reaction === "❤️"
-                        ? ""
-                        : "❤️"
+                    reaction: emoji
                 };
+
             }
 
             return msg;
-        })
-    );
+
+        });
+
+        setAllMessages(updatedMessages);
+
+        socket.emit('message-reacted', {
+            members: selectedChat.members.map(
+                m => m._id ? m._id : m
+            ),
+            messageId,
+            reaction: "❤️"
+        });
+
+    }
+
 };
 
   return (
@@ -480,16 +523,48 @@ const addReaction = (messageId) => {
              <div
                 className={isCurrentUserSender ? "send-message" : "received-message"}
                 onDoubleClick={(e) => {
-                      e.preventDefault();
-                      if(!isCurrentUserSender){
-                          addReaction(msg._id);
-                      }
-                  }}
+                    e.preventDefault();
+                    if(!isCurrentUserSender){
+                        if(showReactionPicker === msg._id){
+                            setShowReactionPicker(null);
+                        } else {
+                            setShowReactionPicker(msg._id);
+                        }
+                    }
+                }}
               >
-               
 
                 {
-                      msg.reaction && (
+                  showReactionPicker === msg._id && (
+
+                    <div className="reaction-picker">
+
+                      {
+                        ["👍", "❤️", "😂", "😮", "😢", "🙏"].map((emoji) => (
+
+                          <span
+                            key={emoji}
+                            className="reaction-emoji"
+                            onClick={() => {
+
+                              addReaction(msg._id, emoji);
+
+                              setShowReactionPicker(null);
+
+                            }}
+                          >
+                            {emoji}
+                          </span>
+
+                        ))
+                      }
+
+                    </div>
+
+                  )
+                }
+
+                {  msg.reaction && (
 
                           <div className="message-reaction">
                               {msg.reaction}

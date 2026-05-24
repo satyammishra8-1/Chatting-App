@@ -7,13 +7,17 @@ import { showLoader } from "../../../redux/loaderSlice";
 import { setAllChats, setSelectedChat } from "../../../redux/usersSlice";
 import moment from "moment";
 import { all } from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import store from "../../../redux/store";
+import { deleteChatForMe } from "../../../apiCalls/chat";
+
 
 function UserList({ searchKey, socket, onlineUsers}) {
 
   const { allusers, allChats, user: currentUser, selectedChat } = useSelector(state => state.usersReducer);
   const dispatch = useDispatch();
+  const [openChatMenuId, setOpenChatMenuId] = useState(null);
+  const [deleteChatId, setDeleteChatId] = useState(null);
  
 
   //new chat
@@ -27,7 +31,7 @@ function UserList({ searchKey, socket, onlineUsers}) {
       if(response.success){
         toast.success(response.message);
         const newChat = response.data;
-        const updatedChat = [...allChats, newChat];
+        const updatedChat = [newChat, ...allChats];;
         dispatch(setAllChats(updatedChat));
         dispatch(setSelectedChat(newChat));
       }
@@ -157,8 +161,13 @@ function getData() {
         .map((obj) => {
           let user = obj;
           if(obj.members){
-            user = obj.members.find(mem => (mem._id ? mem._id : mem) !== currentUser._id);
+            user = obj.members.find(
+              mem => (mem._id ? mem._id : mem) !== currentUser._id
+            );
           }
+        if(!user){
+          return null;
+        }
           
           if(!user) return null;
           return (
@@ -190,9 +199,52 @@ function getData() {
                     <div className="user-display-name"> {(user?.firstname || "") + " " + (user?.lastname || "")} </div>
                     <div className="user-display-email"> { getlastMessage(user?._id) || user?.email}</div>
                   </div>
-                  <div>
+
+                  <div className="user-chat-actions">
                     {getUnreadMessageCount(user._id)}
-                    <div className="last-message-timestamp">{getLastMessageTimestamp(user._id)}</div>
+                    <div className="last-message-timestamp">
+                      {getLastMessageTimestamp(user._id)}
+                    </div>
+                    {
+                      allChats.find(chat =>
+                        (chat?.members?.map(m => (m._id ? m._id : m)) || []).includes(user._id)
+                      ) && (
+                        <div className="chat-options">
+                          <i
+                            className="fa fa-ellipsis-v"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if(openChatMenuId === user._id){
+                                setOpenChatMenuId(null);
+                              } else {
+                                setOpenChatMenuId(user._id);
+                              }
+                            }}
+                          ></i>
+                          {
+                            openChatMenuId === user._id && (
+                              <div className="chat-dropdown">
+                                <div
+                                  className="chat-dropdown-delete"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const chatToDelete = allChats.find(chat =>
+                                      (chat?.members?.map(
+                                        m => (m._id ? m._id : m)
+                                      ) || []).includes(user._id)
+                                    );
+                                    setDeleteChatId(chatToDelete._id);
+                                  }}
+                                                                    
+                                >
+                                  Delete Chat
+                                </div>
+                              </div>
+                            )
+                          }
+                        </div>
+                      )
+                    }
                   </div>
 
                   { !allChats.find(chat => (chat?.members?.map(m => (m._id ? m._id : m)) || []).includes(user._id)) &&
@@ -209,6 +261,48 @@ function getData() {
             </div>
           );
         })}
+
+        {
+          deleteChatId && (
+            <div className="delete-chat-modal">
+              <div className="delete-chat-box">
+                <h3>Delete Chat?</h3>
+                <p>
+                  Are you sure you want to delete this user?
+                </p>
+                <div className="delete-chat-buttons">
+                  <button
+                    className="cancel-delete-btn"
+                  onClick={() => {
+                    setDeleteChatId(null);
+                    setOpenChatMenuId(null);
+                  }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="confirm-delete-btn"
+                    onClick={async () => {
+                      const response = await deleteChatForMe(
+                        deleteChatId
+                      );
+                      if(response.success){
+                        toast.success("Chat deleted");
+                        setOpenChatMenuId(null);
+                        window.location.reload();
+                      } else {
+                        toast.error(response.message);
+                      }
+                      setDeleteChatId(null);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        }
     </>
   );
 }

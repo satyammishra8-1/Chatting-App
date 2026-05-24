@@ -6,6 +6,7 @@ const User = require('./../modules/user');
 const translate = require("google-translate-api-x");
 const CryptoJS = require("crypto-js");
 const SECRET_KEY = process.env.SECRET_KEY;
+const router = require('express').Router();
 
 
 // Route to send a new message
@@ -216,7 +217,7 @@ route.post('/delete-message', authMiddleware, async (req, res) => {
 
 });
 
-
+// Route to translate a message
 route.post("/translate-message", async (req, res) => {
 
   try {
@@ -247,6 +248,41 @@ route.post("/translate-message", async (req, res) => {
     });
 
   }
+
+});
+
+// Route to react to a message
+route.post('/react-message', async (req, res) => {
+
+    try {
+
+        const { messageId, reaction } = req.body;
+
+        const updatedMessage = await Message.findByIdAndUpdate(
+            messageId,
+            {
+                reaction
+            },
+            {
+                new: true
+            }
+        );
+
+        res.status(200).json({
+            success: true,
+            data: updatedMessage
+        });
+
+    } catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Reaction failed'
+        });
+
+    }
 
 });
 

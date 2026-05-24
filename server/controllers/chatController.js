@@ -7,29 +7,41 @@ const SECRET_KEY = process.env.SECRET_KEY;
 const Message = require('../modules/message');
 
 router.post('/create-new-chat', authMiddleware, async(req,res) => {
+
     try{
+
         const chat = new Chat(req.body);
+
         const savedChat = await chat.save();
-        
+
+        const populatedChat = await Chat.findById(savedChat._id)
+        .populate("members")
+        .populate("lastMessage");
+
         res.status(201).send({
             message: 'chat created successfully',
-            success:true, 
-            data: savedChat
-        })
+            success:true,
+            data: populatedChat
+        });
+
     }catch(error){
+
         res.status(400).send({
             message: error.message,
             success:false
-        })
+        });
+
     }
-})
+
+});
 
 router.get('/get-all-chats', authMiddleware, async(req,res) => {
 
     try{
 
         const allChats = await Chat.find({
-            members: { $in: [req.userId] }
+            members: { $in: [req.userId] },
+            deletedFor: { $nin: [req.userId]}
         })
         .populate("members")
         .populate("lastMessage")
@@ -114,5 +126,36 @@ router.post('/clear-unread-message', authMiddleware, async(req,res) => {
         })   
     }
 })
+
+router.post('/delete-chat-for-me', authMiddleware, async (req, res) => {
+
+    try {
+
+        const { chatId } = req.body;
+
+        await Chat.findByIdAndUpdate(
+            chatId,
+            {
+                $addToSet: {
+                    deletedFor: req.userId
+                }
+            }
+        );
+
+        res.send({
+            success: true,
+            message: "Chat removed"
+        });
+
+    } catch (error) {
+
+        res.status(400).send({
+            success: false,
+            message: error.message
+        });
+
+    }
+
+});
 
 module.exports = router;

@@ -60,3 +60,23 @@ export const deleteMessage = async (payload) => {
         return error.response.data;
     }
 };
+
+// New API call for reacting to a message
+export const reactToMessage = async (payload) => {
+
+    try {
+
+        const response = await axiosInstance.post(
+            url + '/api/message/react-message',
+            payload
+        );
+
+        return response.data;
+
+    } catch (error) {
+
+        return error.response.data;
+
+    }
+
+};

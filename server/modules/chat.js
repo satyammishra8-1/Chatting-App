@@ -9,6 +9,10 @@ const chatSchema = new mongoose.Schema({
     lastMessage: {
         type: mongoose.Schema.Types.ObjectId, ref: "message"
     },
+    deletedFor: {
+    type: [String],
+    default: []
+    },
     unreadMessageCount:{
         type: Number,
         default: 0
