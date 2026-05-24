@@ -64,8 +64,10 @@ function Login(){
             <button>Login</button>
 
                 <div className="google-login-wrapper">
-                     width="100%"
+                     
                         <GoogleLogin
+                                size="large"
+                                 width="380"
                             onSuccess={async (credentialResponse) => {
 
                             const userInfo = jwtDecode(
