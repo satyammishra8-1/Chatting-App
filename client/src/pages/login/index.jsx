@@ -64,6 +64,7 @@ function Login(){
             <button>Login</button>
 
                 <div className="google-login-wrapper">
+                     width="100%"
                         <GoogleLogin
                             onSuccess={async (credentialResponse) => {
 
