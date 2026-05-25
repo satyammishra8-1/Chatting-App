@@ -450,7 +450,7 @@ const addReaction = async (messageId, emoji) => {
                 m => m._id ? m._id : m
             ),
             messageId,
-            reaction: "❤️"
+            reaction:  emoji
         });
 
     }
