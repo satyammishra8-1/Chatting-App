@@ -60,6 +60,7 @@ route.post('/new-message', authMiddleware, async (req, res) => {
                 const savedMessage = await newMessage.save();
                 savedMessage.text = req.body.text;
                 savedMessage.translatedText = translatedText;
+                savedMessage.replyTo = req.body.replyTo;
 
             // Update chat only for normal messages
             if(!req.body.isScheduled){

@@ -1620,13 +1620,14 @@ input[type="file"]::file-selector-button:active {
 .reaction-picker{
     position: absolute;
     top: -45px;
-    left: 10px;
+    right:0;
     background: #1f2937;
-    border-radius: 30px;
-    padding: 6px 12px;
+    border-radius: 25px;
     display: flex;
     gap: 10px;
     z-index: 100;
+    max-width: 220px;
+    overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
@@ -1850,6 +1851,8 @@ input[type="file"]::file-selector-button:active {
     will-change: transform;
     backface-visibility: hidden;
     transform: translateZ(0);
+    position: relative;
+    overflow: visible;
   }
 
   .message-timestamp{
@@ -2017,4 +2020,219 @@ button:active,
 .send-schedule-btn:active,
 .send-image-btn:active{
   transform: scale(0.92);
+}
+
+/* =========================
+   MESSAGE ACTION POPUP
+========================= */
+
+.message-action-popup{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  background: rgba(59, 41, 95, 0.96);
+  backdrop-filter: blur(14px);
+  border-radius: 20px;
+  padding: 8px;
+  z-index: 1001;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: popupAnimation 0.15s ease;
+}
+
+
+.message-popup-overlay{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+
+.popup-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:0.18s ease;
+  color:white;
+  font-size:15px;
+  font-weight:500;
+}
+
+.popup-item:hover{
+  background: rgba(255,255,255,0.08);
+}
+
+
+@keyframes popupAnimation {
+
+  from{
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+
+  to{
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+.reply-preview{
+  background: rgba(255,255,255,0.06);
+  border-left: 4px solid #22C55E;
+   padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+
+.reply-preview-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:5px;
+  font-size:13px;
+  color:#22C55E;
+  font-weight:600;
+}
+
+
+.reply-preview-text{
+  font-size:13px;
+  opacity:0.9;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:250px;
+}
+
+
+.close-reply-btn{
+  background:none;
+  border:none;
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+}
+.chat-reply-box{
+  display:flex;
+  gap:8px;
+  background: rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:8px;
+  margin-bottom:8px;
+}
+
+.chat-reply-line{
+  width:4px;
+  border-radius:10px;
+  background:#c8fe07;
+}
+
+.chat-reply-title{
+  font-size:12px;
+  color:#000000;
+  font-weight:600;
+  margin-bottom:2px;
+}
+
+.chat-reply-text{
+  font-size:13px;
+  opacity:0.85;
+  max-width:220px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.forward-modal-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.forward-modal{
+  width: 350px;
+  max-height: 500px;
+  overflow-y: auto;
+  border-radius: 24px;
+  padding: 20px;
+  background: rgba(30,41,59,0.95);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  animation: forwardPopup 0.2s ease;
+}
+
+.forward-modal-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-forward-btn{
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.close-forward-btn:hover{
+  transform: scale(1.1);
+  color: #EF4444;
+}
+
+.forward-chat-list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.forward-chat-item{
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.forward-chat-item:hover{
+  background: linear-gradient(
+    135deg,
+    #6366F1,
+    #8B5CF6
+  );
+  transform: translateY(-2px);
+}
+
+@keyframes forwardPopup{
+  from{
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to{
+    opacity: 1;
+    transform: scale(1);
+  }
+
 }

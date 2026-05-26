@@ -42,6 +42,15 @@ function ChatArea({ socket,setMobileChatOpen  }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [showReactionPicker, setShowReactionPicker] = useState(null);
+  const [showActionPopup, setShowActionPopup] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [replyMessage, setReplyMessage] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({
+    x: 0,
+    y: 0
+  });
+  const [showForwardModal, setShowForwardModal] = useState(false);
+  const [forwardMessage, setForwardMessage] = useState(null);
 
 const isChrome = /Chrome/.test(navigator.userAgent);
 
@@ -89,6 +98,12 @@ recognition.onerror = (event) => {
         sender: user._id,
         text: message,
         image: image,
+        replyTo: replyMessage
+          ? {
+              text: replyMessage.text,
+              sender: replyMessage.sender
+            }
+          : null,
         language: user.preferredLanguage || "en",
 
         isScheduled: scheduleDateTime ? true : false,
@@ -106,7 +121,9 @@ recognition.onerror = (event) => {
            setAllMessages((prev) => [...prev, tempMessage]);
 
             setMessage("");
+            setReplyMessage(null);
       //dispatch(showLoader());
+      console.log(newMessage);
       const response = await createNewMessage(newMessage);
       //dispatch(hideLoader());
       if(response.success && !scheduleDateTime){
@@ -420,37 +437,37 @@ useEffect(() => {
 
   // Add reaction to message
 const addReaction = async (messageId, emoji) => {
-
+    const currentMessage = allMessages.find(
+        msg => msg._id === messageId
+    );
+    const finalReaction =
+        currentMessage?.reaction === emoji
+            ? ""
+            : emoji;
     const response = await reactToMessage({
         messageId,
-        reaction: emoji
+        reaction: finalReaction
     });
-
     if(response.success){
-
         const updatedMessages = allMessages.map((msg) => {
-
             if(msg._id === messageId){
-
                 return {
                     ...msg,
-                    reaction: emoji
+                    reaction: finalReaction
                 };
-
             }
-
             return msg;
-
         });
-
         setAllMessages(updatedMessages);
-
         socket.emit('message-reacted', {
             members: selectedChat.members.map(
                 m => m._id ? m._id : m
             ),
+
             messageId,
-            reaction:  emoji
+
+            reaction: finalReaction
+
         });
 
     }
@@ -498,7 +515,10 @@ const addReaction = async (messageId, emoji) => {
 
         </div>
      
-<div className="main-chat-area" id="main-chat-area">
+<div className="main-chat-area" id="main-chat-area"   onClick={() => {
+              setShowActionPopup(false);
+              setReplyMessage(null);
+            }}>
   {allMessages.map((msg, index) => {
     
     const isCurrentUserSender = msg.sender === user._id;
@@ -511,18 +531,13 @@ const addReaction = async (messageId, emoji) => {
             <div>
              <div
                 className={isCurrentUserSender ? "send-message" : "received-message"}
-                onDoubleClick={(e) => {
-                    e.preventDefault();
-                    if(!isCurrentUserSender){
-                        if(showReactionPicker === msg._id){
-                            setShowReactionPicker(null);
-                        } else {
-                            setShowReactionPicker(msg._id);
-                        }
-                    }
-                }}
+                  onClick={(e) => {
+                e.stopPropagation();
+                    setSelectedMessage(msg);
+                    setShowActionPopup(true);
+                  }}
+                    
               >
-
                 {
                   showReactionPicker === msg._id && (
 
@@ -534,12 +549,11 @@ const addReaction = async (messageId, emoji) => {
                           <span
                             key={emoji}
                             className="reaction-emoji"
-                            onClick={() => {
-
-                              addReaction(msg._id, emoji);
-
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setShowReactionPicker(null);
-
+                              setShowActionPopup(false);
+                              addReaction(msg._id, emoji);
                             }}
                           >
                             {emoji}
@@ -562,6 +576,22 @@ const addReaction = async (messageId, emoji) => {
                   }
 
               <div className="message-content">
+                  {msg.replyTo && (
+                    <div className="chat-reply-box">
+                      <div className="chat-reply-line"></div>
+                      <div className="chat-reply-content">
+                        <div className="chat-reply-title">
+                          {msg.replyTo.sender === user._id
+                            ? "You"
+                            : formatName(selectedUser)
+                          }
+                        </div>
+                        <div className="chat-reply-text">
+                          {msg.replyTo.text}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                 <div>
                   {
@@ -575,21 +605,20 @@ const addReaction = async (messageId, emoji) => {
                 <div className="message-menu">
 
                   <i
-                      className="fa fa-ellipsis-v"
-                      style={{
-                        fontSize: "30px",
-                        padding: "5px",
-                        cursor: "pointer"
-                      }}
-                      onClick={() => {
-
-                        if(openMenuId === msg._id){
-                          setOpenMenuId(null);
-                        } else {
-                          setOpenMenuId(msg._id);
-                        }
-
-                      }}
+                    className="fa fa-ellipsis-v"
+                    style={{
+                      fontSize: "30px",
+                      padding: "5px",
+                      cursor: "pointer"
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if(openMenuId === msg._id){
+                        setOpenMenuId(null);
+                      } else {
+                        setOpenMenuId(msg._id);
+                      }
+                    }}
                   ></i>
                     {
                   openMenuId === msg._id && (
@@ -602,16 +631,14 @@ const addReaction = async (messageId, emoji) => {
                   >
                     <div
                       className="message-dropdown-item"
-                      onClick={() => {
-
-                        handleDeleteMessage(
-                          msg._id,
-                          isCurrentUserSender ? "everyone" : "me"
-                        );
-
-                        setOpenMenuId(null);
-
-                      }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMessage(
+                              msg._id,
+                              isCurrentUserSender ? "everyone" : "me"
+                            );
+                            setOpenMenuId(null);
+                          }}
                     >
                       {
                         isCurrentUserSender
@@ -653,8 +680,25 @@ const addReaction = async (messageId, emoji) => {
       })}
     </div>
       
+                  {replyMessage && (
+              <div className="reply-preview">
+                <div className="reply-preview-header">
+                  <span>Replying to</span>
+                  <button
+                    className="close-reply-btn"
+                    onClick={() => setReplyMessage(null)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="reply-preview-text">
+                  {replyMessage.text}
+                </div>
+              </div>
+            )}
       
       <div className="send-message-div">
+
          {
             showEmojiPicker && (
               <div className="emoji-picker-container">
@@ -731,64 +775,199 @@ const addReaction = async (messageId, emoji) => {
         ></button>
       </div>
 
-      {showScheduleModal && (
-      <div className="schedule-modal-overlay">
-        <div className="schedule-modal">
+        {showScheduleModal && (
+        <div className="schedule-modal-overlay">
+          <div className="schedule-modal">
 
-          <h3>Schedule Message</h3>
+            <h3>Schedule Message</h3>
 
-          <input
-            type="date"
-            value={scheduledDate}
-            onChange={(e) => setScheduledDate(e.target.value)}
-          />
+            <input
+              type="date"
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+            />
 
-          <input
-            type="time"
-            value={scheduledTime}
-            onChange={(e) => setScheduledTime(e.target.value)}
-          />
+            <input
+              type="time"
+              value={scheduledTime}
+              onChange={(e) => setScheduledTime(e.target.value)}
+            />
 
-          <div className="schedule-modal-buttons">
+            <div className="schedule-modal-buttons">
 
-            <button onClick={() => setShowScheduleModal(false)}>
-              Cancel
-            </button>
+              <button onClick={() => setShowScheduleModal(false)}>
+                Cancel
+              </button>
 
-            <button
-              onClick={() => {
-                console.log("Scheduled:", scheduledDate, scheduledTime);
-                setShowScheduleModal(false);
-              }}
-            >
-              Schedule
-            </button>
+              <button
+                onClick={() => {
+                  console.log("Scheduled:", scheduledDate, scheduledTime);
+                  setShowScheduleModal(false);
+                }}
+              >
+                Schedule
+              </button>
 
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
-      {isListening && (
+        {isListening && (
 
-          <div className="voice-popup">
+            <div className="voice-popup">
 
-            <div className="voice-popup-mic">
-              <FaMicrophone />
+              <div className="voice-popup-mic">
+                <FaMicrophone />
+              </div>
+
+              <div className="voice-popup-text">
+                Listening...
+              </div>
+
+              <div className="voice-popup-transcript">
+                {liveTranscript}
+              </div>
+
             </div>
 
-            <div className="voice-popup-text">
-              Listening...
+          )}
+
+      {showActionPopup && selectedMessage && (
+        <>
+
+          <div
+            className="message-popup-overlay"
+            onClick={() => setShowActionPopup(false)}
+          ></div>
+
+            <div
+              className="message-action-popup"
+              onMouseEnter={() => {
+                setShowActionPopup(true);
+              }}
+              onMouseLeave={() => {
+                setShowActionPopup(false);
+              }}
+            >
+
+            <div
+              className="popup-item"
+                onClick={() => {
+                  setReplyMessage(selectedMessage);
+                  setShowActionPopup(false);
+                }}
+            >
+              <span>↩</span>
+              <span>Reply</span>
             </div>
 
-            <div className="voice-popup-transcript">
-              {liveTranscript}
+            <div
+              className="popup-item"
+              onClick={() => {
+                navigator.clipboard.writeText(selectedMessage.text);
+                toast.success("Message copied");
+                setShowActionPopup(false);
+              }}
+            >
+              <span>📋</span>
+              <span>Copy</span>
+            </div>
+
+            <div
+              className="popup-item"
+              onClick={() => {
+              setForwardMessage(selectedMessage);
+              setShowForwardModal(true);
+              setShowActionPopup(false);
+                setShowActionPopup(false);
+              }}
+            >
+              <span>📤</span>
+              <span>Forward</span>
+            </div>
+            <div
+              className="popup-item"
+              onClick={(e) => {
+                e.stopPropagation();
+                if(showReactionPicker === selectedMessage._id){
+                  setShowReactionPicker(null);
+                } else {
+
+                  setShowReactionPicker(selectedMessage._id);
+                }
+                setShowActionPopup(false);
+              }}
+            >
+              <span>😀</span>
+              <span>React</span>
             </div>
 
           </div>
 
-        )}
+        </>
+      )}
 
+      {showForwardModal && (
+        <div className="forward-modal-overlay">
+          <div className="forward-modal">
+            <div className="forward-modal-header">
+              <span>Forward Message</span>
+              <button
+                className="close-forward-btn"
+                onClick={() => setShowForwardModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className="forward-chat-list">
+                            {
+                              allChats.map((chat) => {
+                                if(String(chat._id) === String(selectedChat._id)){
+                                  return null;
+                                }
+                                const otherMember = chat.members.find(
+                                  member =>
+                                    String(member._id ? member._id : member) !== String(user._id)
+                                );
+                                if(!otherMember) return null;
+                                return (
+                              <div
+                                key={chat._id}
+                                className="forward-chat-item"
+                                onClick={async () => {
+                                  const newMessage = {
+                                    chatId: chat._id,
+                                    sender: user._id,
+                                    text: forwardMessage.text,
+                                    image: forwardMessage.image || "",
+                                    language: user.preferredLanguage || "en",
+                                  };
+                                  const response = await createNewMessage(newMessage);
+                                  if(response.success){
+                                    socket.emit('send-message', {
+                                      ...response.data,
+                                      members: chat.members.map(
+                                        m => m._id ? m._id : m
+                                      )
+                                    });
+                                    toast.success("Message forwarded");
+                                    setShowForwardModal(false);
+                                    setForwardMessage(null);
+                                  }
+                                }}
+                              >
+                                    {otherMember.firstname
+                                      ? formatName(otherMember)
+                                      : "Unknown User"}
+                                  </div>
+                                );
+                              })
+                            }
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

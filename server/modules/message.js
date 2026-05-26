@@ -11,6 +11,15 @@ const messageScema = new mongoose.Schema({
         type:String,
         require:false
     },
+    replyTo: {
+    text: {
+        type: String
+    },
+    sender: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users"
+    }
+    },
     image:{
         type:String,
         required: false
@@ -36,7 +45,7 @@ const messageScema = new mongoose.Schema({
         default: []
         },
 
-        isDeletedForEveryone: {
+    isDeletedForEveryone: {
         type: Boolean,
         default: false
         },
