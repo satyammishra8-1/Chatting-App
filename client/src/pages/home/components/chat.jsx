@@ -49,8 +49,12 @@ function ChatArea({ socket,setMobileChatOpen  }) {
     x: 0,
     y: 0
   });
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
+  const [swipedMessageId, setSwipedMessageId] = useState(null);
   const [showForwardModal, setShowForwardModal] = useState(false);
   const [forwardMessage, setForwardMessage] = useState(null);
+  
 
 const isChrome = /Chrome/.test(navigator.userAgent);
 
@@ -530,11 +534,65 @@ const addReaction = async (messageId, emoji) => {
             style={isCurrentUserSender ? { justifyContent: "end" } : { justifyContent: "start" }}>
             <div>
              <div
-                className={isCurrentUserSender ? "send-message" : "received-message"}
+                className={`${ isCurrentUserSender ? "send-message" : "received-message"} ${ swipedMessageId === msg._id ? isCurrentUserSender
+                        ? "swipe-left"
+                          : "swipe-right"
+                          : ""
+                         }`}
                   onClick={(e) => {
-                e.stopPropagation();
+                    if(window.innerWidth < 768){
+                      return;
+                    }
+                     e.stopPropagation();
                     setSelectedMessage(msg);
                     setShowActionPopup(true);
+                  }}
+                  onTouchStart={(e) => {
+                    setTouchStartX(e.changedTouches[0].screenX);
+                  }}
+                 
+                  onTouchEnd={(e) => {
+
+                    const endX = e.changedTouches[0].screenX;
+
+                    setTouchEndX(endX);
+
+                    const swipeDistance = touchStartX - endX;
+
+                    // Sender → swipe left
+                    if(isCurrentUserSender && swipeDistance > 70){
+
+                      setSwipedMessageId(msg._id);
+
+                      setSelectedMessage(msg);
+
+                      setShowActionPopup(true);
+
+                      setTimeout(() => {
+
+                        setSwipedMessageId(null);
+
+                      }, 180);
+
+                    }
+
+                    // Receiver → swipe right
+                    if(!isCurrentUserSender && swipeDistance < -70){
+
+                      setSwipedMessageId(msg._id);
+
+                      setSelectedMessage(msg);
+
+                      setShowActionPopup(true);
+
+                      setTimeout(() => {
+
+                        setSwipedMessageId(null);
+
+                      }, 180);
+
+                    }
+
                   }}
                     
               >

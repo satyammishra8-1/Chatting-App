@@ -2236,3 +2236,17 @@ button:active,
   }
 
 }
+
+/************/
+.sed-message,
+.received-message{
+  transition: transform 0.18s ease;
+  will-change: transform;
+}
+.swipe-left{
+  transform: translateX(-45px) scale(0.98);
+}
+
+.swipe-right{
+  transform: translateX(45px) scale(0.98);
+}
