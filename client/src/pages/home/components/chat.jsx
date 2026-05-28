@@ -15,6 +15,7 @@ import { createYouItem, getYouItems, toggleYouTask, deleteYouItem} from "../../.
 
 
 
+
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -83,8 +84,19 @@ const isChrome = /Chrome/.test(navigator.userAgent);
     toast.error("Voice input works best in Google Chrome");
     window.voiceToastShown = true;
   }
+  const speechLanguageMap = {
+    en: "en-US",
+    hi: "hi-IN",
+    kn: "kn-IN",
+    ta: "ta-IN",
+    te: "te-IN",
+    ml: "ml-IN"
+
+};
   recognition.continuous = false;
-  recognition.lang = "en-US";
+  recognition.lang =
+    speechLanguageMap[user?.preferredLanguage] || "en-US";
+  
   recognition.interimResults = false;
 
       recognition.onresult = (event) => {
@@ -1136,7 +1148,11 @@ const addReaction = async (messageId, emoji) => {
         )}
         <textarea
           type="text"
-          className="send-message-input"
+         className={`send-message-input ${
+          selectedChat?.isSelfChat
+            ? "you-input-box"
+            : "normal-chat-input"
+        }`}
           placeholder="Type a message"
           value={message}
             onChange={(e) => {

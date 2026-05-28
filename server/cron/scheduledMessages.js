@@ -1,6 +1,8 @@
 const cron = require("node-cron");
 const Message = require("../modules/message");
 const Chat = require("../modules/chat");
+const CryptoJS = require("crypto-js");
+const SECRET_KEY = process.env.SECRET_KEY;
 
 const startScheduledMessagesCron = (io) => {
 
@@ -28,8 +30,24 @@ const startScheduledMessagesCron = (io) => {
                     $inc: { unreadMessageCount: 1 }
                 });
 
-                io.emit("receive-message", updatedMessage);
+const decryptedMessage = {
 
+    ...updatedMessage._doc,
+
+    text: CryptoJS.AES.decrypt(
+        updatedMessage.text,
+        SECRET_KEY
+    ).toString(CryptoJS.enc.Utf8),
+
+    translatedText: updatedMessage.translatedText
+        ? CryptoJS.AES.decrypt(
+              updatedMessage.translatedText,
+              SECRET_KEY
+          ).toString(CryptoJS.enc.Utf8)
+        : ""
+
+};
+            io.emit("receive-message", decryptedMessage);
             }
 
         } catch (error) {
