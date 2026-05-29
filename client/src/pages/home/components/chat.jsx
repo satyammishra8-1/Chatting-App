@@ -544,19 +544,6 @@ socket.on('message-reaction-updated', (data) => {
   });
 
 });
-socket.on('reminder-notification', (data) => {
-
-  console.log("REMINDER RECEIVED", data);
-
-  new Notification(
-    'QuickChat Reminder',
-    {
-      body: data.text,
-      icon: '/pwa-192.png'
-    }
-  );
-
-});
 
 return () => {
   socket.off("receive-message");
