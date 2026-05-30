@@ -25,7 +25,9 @@ function UserList({ searchKey, socket, onlineUsers, setMobileChatOpen}) {
     let response = null;
     try{
       dispatch(showLoader());
-      response = await createNewChat([currentUser._id, searchedUserId]);
+      response = await createNewChat({
+        members: [currentUser._id, searchedUserId]
+      });
       dispatch(hideLoader());
 
       if(response.success){
@@ -45,10 +47,20 @@ function UserList({ searchKey, socket, onlineUsers, setMobileChatOpen}) {
    }
 
   const openChat = (selectedUserId) => {
+    console.log("CLICKED USER:", selectedUserId);
+  console.log(
+    allChats.map(c => ({
+      id: c._id,
+      isSelfChat: c.isSelfChat,
+      members: c.members
+    }))
+  );
   const chat = allChats.find(chat =>
     (chat?.members?.map(m => (m._id ? m._id : m)) || []).includes(currentUser._id) &&
     (chat?.members?.map(m => (m._id ? m._id : m)) || []).includes(selectedUserId)
+    
   );
+  console.log("FOUND CHAT:", chat);
   
         if (chat) {
       dispatch(setSelectedChat(chat));
