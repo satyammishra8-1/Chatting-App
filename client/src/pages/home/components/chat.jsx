@@ -79,6 +79,7 @@ if(isSelfChat){
   const [youItems, setYouItems] = useState([]);
   const [reminderMessages, setReminderMessages] = useState([]);
   
+  
 
 const isChrome = /Chrome/.test(navigator.userAgent);
 
@@ -1276,8 +1277,8 @@ const addReaction = async (messageId, emoji) => {
                             messageId: selectedMessage._id,
                             text: selectedMessage.text,
                             remindAt: new Date(
-                              `${scheduledDate}T${scheduledTime}`
-                            )
+                            `${scheduledDate}T${scheduledTime}`
+                          ).toISOString()
                           });
                         if(response.success){
                           setReminderMessages(prev => [

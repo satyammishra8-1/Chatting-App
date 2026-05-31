@@ -11,12 +11,17 @@ const startReminderChecker = (io) => {
             const now = new Date();
             console.log("Current Server Time:", now);
             const reminders = await Reminder.find({
-
-                remindAt: { $lte: now },
-
-                triggered: false
-
+                triggered: false,
+                remindAt: { $lte: now }
             });
+
+            console.log(
+                reminders.map(r => ({
+                    text: r.text,
+                    remindAt: r.remindAt,
+                    triggered: r.triggered
+                }))
+            );
             console.log("Found reminders:", reminders.length);
 
             for (const reminder of reminders) {
