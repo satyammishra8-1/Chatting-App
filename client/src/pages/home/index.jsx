@@ -19,6 +19,7 @@ function Home() {
      const [onlineUsers, setOnlineUsers] = useState([]);
      const [mobileChatOpen, setMobileChatOpen] = useState(false);
      const [reminderText, setReminderText] = useState("");
+     const [reminderData, setReminderData] = useState(null);
      
 
      useEffect(() => {
@@ -71,7 +72,7 @@ function Home() {
 
                          audio.play();
                         setReminderText(data.text);
-
+                         setReminderData(data);
                          try {
 
                               new Notification(
