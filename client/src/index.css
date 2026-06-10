@@ -2068,6 +2068,38 @@ button:active,
   background: rgba(255,255,255,0.08);
 }
 
+.message-options-popup{
+    position: absolute;
+    bottom: 65px;
+    right: 120px;
+
+    background: #1e1633;
+    border-radius: 12px;
+    padding: 8px;
+
+    min-width: 230px;
+
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 999;
+}
+
+.message-options-popup .popup-item{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 14px;
+    cursor: pointer;
+    color: white;
+    border-radius: 8px;
+}
+.message-options-popup .popup-item{
+    white-space: nowrap;
+}
+
+.message-options-popup .popup-item:hover{
+    background: rgba(255,255,255,0.1);
+}
 
 @keyframes popupAnimation {
 
@@ -2253,21 +2285,13 @@ button:active,
 }
 
 .you-chat-card{
-
     display: flex;
-
     align-items: center;
-
     gap: 14px;
-
     padding: 14px;
-
     margin: 10px;
-
     border-radius: 18px;
-
     cursor: pointer;
-
     background: linear-gradient(
         135deg,
         rgba(144, 155, 152, 0.15),
@@ -2318,37 +2342,24 @@ button:active,
 
 
 @media(max-width:768px){
-
     .you-chat-card{
-
         margin: 8px;
-
         padding: 12px;
-
         border-radius: 16px;
-
     }
 
     .you-chat-icon{
-
         width: 42px;
-
         height: 42px;
-
         font-size: 20px;
-
     }
 
     .you-chat-title{
-
         font-size: 15px;
-
     }
 
     .you-chat-subtitle{
-
         font-size: 12px;
-
     }
 }
 
@@ -2368,9 +2379,7 @@ button:active,
      position: sticky;
     top: 0;
     z-index: 50;
-
     background: var(--card-bg);
-
     padding-top: 10px;
     padding-bottom: 10px;
     }
@@ -2738,4 +2747,152 @@ button:active,
     font-size: 14px;
   }
 
+}
+
+/* Secure PIN Modal */
+
+.otp-modal-overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+    backdrop-filter: blur(4px);
+}
+
+.otp-modal{
+    width: 350px;
+    background: #1f2937;
+    border-radius: 18px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    color: white;
+}
+
+.otp-modal h2{
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+.otp-modal p{
+    color: #d1d5db;
+    margin-bottom: 18px;
+}
+
+.otp-input{
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #4b5563;
+    border-radius: 10px;
+    background: #111827;
+    color: white;
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 8px;
+    outline: none;
+    margin-bottom: 15px;
+}
+
+.otp-input:focus{
+    border-color: #8b5cf6;
+}
+
+.verify-otp-btn{
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #8b5cf6;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.verify-otp-btn:hover{
+    transform: translateY(-1px);
+}
+
+.cancel-pin-btn{
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #374151;
+    color: white;
+    cursor: pointer;
+}
+
+.select-profile-pic-container{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 25px;
+}
+
+.select-profile-pic-container select{
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.select-profile-pic-container input[type="file"]{
+    max-width: 220px;
+}
+
+.upload-image-btn{
+    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.upload-image-btn:hover{
+    transform: translateY(-2px);
+}
+.secure-pin-btn{
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Send OTP */
+.schedule-modal button:nth-of-type(1){
+    background: #6366f1;
+    color: white;
+}
+
+/* Verify OTP */
+.schedule-modal button:nth-of-type(2){
+    background: #8b5cf6;
+    color: white;
+}
+
+/* Save PIN */
+.schedule-modal button:nth-of-type(3){
+    background: #22c55e;
+    color: white;
+}
+
+/* Cancel */
+.schedule-modal button:last-child{
+    background: #ef4444;
+    color: white;
 }

@@ -106,5 +106,84 @@ router.post('/update-preferred-language', authMiddleware, async (req,res) => {
     }
 });
 
+// Route to verify secure pin
+router.post("/verify-secure-pin", authMiddleware, async (req, res) => {
+  try {
+
+    const user = await User.findById(req.userId);
+    console.log("PIN FROM FRONTEND:", req.body.pin);
+    console.log("PIN IN DB:", user.securePin);
+
+    if(user.securePin === req.body.pin){
+
+      return res.send({
+        success: true
+      });
+
+    }
+
+    res.send({
+      success: false,
+      message: "Invalid PIN"
+    });
+
+  } catch(error){
+
+    res.status(500).send({
+      success: false,
+      message: error.message
+    });
+
+  }
+});
+
+// Route to change secure pin
+router.post("/change-secure-pin", authMiddleware, async (req, res) => {
+  try {
+        if(!/^\d{4}$/.test(req.body.pin)){
+            return res.send({
+                success: false,
+                message: "PIN must be exactly 4 digits"
+            });
+            }
+
+    await User.findByIdAndUpdate(
+      req.userId,
+      {
+        securePin: req.body.pin
+      }
+    );
+
+    res.send({
+      success: true,
+      message: "PIN Updated Successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).send({
+      success: false,
+      message: error.message
+    });
+
+  }
+});
+
+// Route to hide pin info popup
+router.post( "/hide-pin-popup",  authMiddleware, async (req, res) => {
+
+    await User.findByIdAndUpdate(
+      req.userId,
+      {
+        pinPopupShown: true
+      }
+    );
+
+    res.send({
+      success: true
+    });
+
+  }
+);
 
 module.exports = router;

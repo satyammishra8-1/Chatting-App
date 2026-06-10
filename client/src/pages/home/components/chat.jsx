@@ -12,6 +12,7 @@ import { FaMicrophone } from "react-icons/fa";
 import { reactToMessage } from "../../../apiCalls/message";
 import { createYouItem, getYouItems, toggleYouTask, deleteYouItem} from "../../../apiCalls/you";
 import { createReminder } from "../../../apiCalls/reminder";
+import { verifySecurePin } from "../../../apiCalls/users";
 
 
 
@@ -64,10 +65,7 @@ if(isSelfChat){
   const [showActionPopup, setShowActionPopup] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [replyMessage, setReplyMessage] = useState(null);
-  const [popupPosition, setPopupPosition] = useState({
-    x: 0,
-    y: 0
-  });
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0});
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
   const [swipedMessageId, setSwipedMessageId] = useState(null);
@@ -75,9 +73,14 @@ if(isSelfChat){
   const [forwardMessage, setForwardMessage] = useState(null);
   const [youFilter, setYouFilter] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isSecureMessage, setIsSecureMessage] = useState(false);
+  const [openedSecureMessages, setOpenedSecureMessages] = useState([]);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [youItems, setYouItems] = useState([]);
   const [reminderMessages, setReminderMessages] = useState([]);
+  const [showMessageOptions, setShowMessageOptions] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [enteredPin, setEnteredPin] = useState("");
   
   
 
@@ -190,6 +193,7 @@ const newMessage = {
     //text: message,
     text: finalMessage,
     category,
+    isSecureMessage,
     image: image,
     replyTo: replyMessage
       ? {
@@ -217,6 +221,7 @@ const newMessage = {
             setReplyMessage(null);
       //dispatch(showLoader());
       console.log(newMessage);
+      console.log("SENDING:", newMessage);
       const response = await createNewMessage(newMessage);
       //dispatch(hideLoader());
       if(response.success && !scheduleDateTime){
@@ -230,7 +235,7 @@ const newMessage = {
        }
 
      if(response.success){
-      setSelectedCategory("");
+      setIsSecureMessage(false);
       setScheduledDate("");
       setScheduledTime("");
       setShowScheduleModal(false);
@@ -393,7 +398,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-
+  setOpenedSecureMessages([]);
   getMessages();
 
   if (selectedChat?.lastMessage?.sender !== user._id) {
@@ -685,9 +690,14 @@ const addReaction = async (messageId, emoji) => {
         </div>
 
      
-<div className="main-chat-area" id="main-chat-area"   onClick={() => {
-              setShowActionPopup(false);
-            }}>
+        <div
+          className="main-chat-area"
+          id="main-chat-area"
+          onClick={() => {
+            setShowActionPopup(false);
+            setShowMessageOptions(false);
+          }}
+        >
    {selectedChat?.isSelfChat && (
 
     <div className="you-chat-wrapper">
@@ -954,12 +964,25 @@ const addReaction = async (messageId, emoji) => {
                     }}
                   >
 
-                    {
-                      msg.sender === user._id ||
-                      msg.language === user.preferredLanguage
-                        ? msg.text
-                        : msg.translatedText || msg.text
-                    }
+            {
+              msg.isSecureMessage ? (
+                openedSecureMessages.includes(msg._id) ? (
+                  msg.sender === user._id ||
+                  msg.language === user.preferredLanguage
+                    ? msg.text
+                    : msg.translatedText || msg.text
+                ) : (
+                  <span>
+                    🔒 Secure Message
+                  </span>
+                )
+              ) : (
+                msg.sender === user._id ||
+                msg.language === user.preferredLanguage
+                  ? msg.text
+                  : msg.translatedText || msg.text
+              )
+            }
 
                     {msg.completed && (
 
@@ -1103,7 +1126,7 @@ const addReaction = async (messageId, emoji) => {
               </div>
             )}
       
-      <div className="send-message-div">
+      <div  className="send-message-div" onClick={() => setShowMessageOptions(false)} >
 
         {selectedChat?.isSelfChat && (
 
@@ -1165,6 +1188,34 @@ const addReaction = async (messageId, emoji) => {
           </div>
 
         )}
+
+        {showMessageOptions && (
+           <div className="message-options-popup" onClick={(e) => e.stopPropagation()}>
+
+            <div
+              className="popup-item"
+              onClick={() => {
+                setShowScheduleModal(true);
+                setShowMessageOptions(false);
+              }}
+            >
+              ⏰ Schedule Message
+            </div>
+
+            <div
+              className="popup-item"
+              onClick={() => {
+                setIsSecureMessage(true);
+                toast.success("Secure Message Enabled");
+                setShowMessageOptions(false);
+              }}
+            >
+              🔒 Secure Message
+            </div>
+
+          </div>
+        )}
+
         <textarea
           type="text"
          className={`send-message-input ${
@@ -1208,9 +1259,12 @@ const addReaction = async (messageId, emoji) => {
         </label>
 
         <button
-          className="fa fa-clock-o send-schedule-btn"
+          className="fa fa-plus send-schedule-btn"
           aria-hidden="true"
-          onClick={() => setShowScheduleModal(true)}
+          onClick={(e) => {
+              e.stopPropagation();
+              setShowMessageOptions(!showMessageOptions);
+            }}
         ></button>
 
         <button
@@ -1361,6 +1415,22 @@ const addReaction = async (messageId, emoji) => {
   <span>Reminder</span>
 </div>
 
+        {selectedMessage?.isSecureMessage && (
+          <div
+           className="message-action-item"
+            style={{
+              color: "white",
+              cursor: "pointer"
+            }}
+            className="message-action-item"
+            onClick={() => {
+              setShowPinModal(true);
+            }}
+          >
+          🔓 Message lock
+          </div>
+        )}
+
             <div
               className="popup-item"
               onClick={() => {
@@ -1452,6 +1522,7 @@ const addReaction = async (messageId, emoji) => {
                                     image: forwardMessage.image || "",
                                     language: user.preferredLanguage || "en",
                                   };
+                              
                                   const response = await createNewMessage(newMessage);
                                   if(response.success){
                                     socket.emit('send-message', {
@@ -1479,6 +1550,73 @@ const addReaction = async (messageId, emoji) => {
           </div>
         </div>
       )}
+
+      {showPinModal && (
+  <div className="otp-modal-overlay">
+
+    <div className="otp-modal">
+
+      <h2>🔐</h2>
+
+      <p>
+        Enter your 4-digit Secure PIN
+      </p>
+
+      <input
+        type="password"
+        maxLength={4}
+        className="otp-input"
+        value={enteredPin}
+        onChange={(e) => setEnteredPin(e.target.value)}
+        placeholder="••••"
+      />
+
+      <button
+        className="verify-otp-btn"
+        onClick={async () => {
+
+          const response =
+            await verifySecurePin(enteredPin);
+
+          if(response.success){
+
+            setOpenedSecureMessages(prev => [
+              ...prev,
+              selectedMessage._id
+            ]);
+
+            setShowPinModal(false);
+            setEnteredPin("");
+
+          }else{
+
+            toast.error("Wrong PIN");
+
+          }
+
+        }}
+      >
+        Unlock Message
+      </button>
+
+      <button
+        style={{
+          marginTop: "10px",
+          background: "#374151"
+        }}
+         className="cancel-pin-btn"
+        onClick={() => {
+          setShowPinModal(false);
+          setEnteredPin("");
+        }}
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+              )}
     </div>
   );
 }

@@ -8,6 +8,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required:true
     },
+    securePin: {
+    type: String,
+    default: "1234"
+    },
+    pinPopupShown: {
+    type: Boolean,
+    default: false
+    },
     email:{
         type: String,
         required:true

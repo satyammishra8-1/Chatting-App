@@ -10,6 +10,7 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 // Route to send a new message
 route.post('/new-message', authMiddleware, async (req, res) => {
+    console.log("REQ BODY:", req.body);
     try {
         console.log(req.body);
         // Store the message in message collection
@@ -71,6 +72,7 @@ route.post('/new-message', authMiddleware, async (req, res) => {
                         translatedText: encryptedTranslatedText
                     });
                 const savedMessage = await newMessage.save();
+                console.log("SAVED:", savedMessage.isSecureMessage);
                 savedMessage.text = req.body.text;
                 savedMessage.translatedText = translatedText;
                 savedMessage.replyTo = req.body.replyTo;

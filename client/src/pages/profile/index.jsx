@@ -2,18 +2,28 @@ import { useSelector } from 'react-redux';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { uploadProfilePic, updatePreferredLanguage } from '../../apiCalls/users';
 import { hideLoader, showLoader } from '../../redux/loaderSlice';
 import { setUser } from '../../redux/usersSlice';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
+import { sendOtp, verifyOtp } from "../../apiCalls/otp";
+import {
+  uploadProfilePic,
+  updatePreferredLanguage,
+  changeSecurePin
+} from '../../apiCalls/users';
 
 function Profile(){
     const { user } = useSelector(state => state.usersReducer);
     const [image, setImage] = useState(null);
     const [preferredLanguage, setPreferredLanguage] = useState(user?.preferredLanguage || "en");
+    const [showPinModal, setShowPinModal] = useState(false);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [otp, setOtp] = useState("");
+    const [otpVerified, setOtpVerified] = useState(false);
+    const [newPin, setNewPin] = useState("");
+    const [confirmPin, setConfirmPin] = useState("");
 
     useEffect(() => {
         if(user?.profilePic){
@@ -129,8 +139,127 @@ const onLanguageChange = async (e) => {
                     <option value="kn">ಕನ್ನಡ</option>
                     <option value="ta">தமிழ்</option>
                     </select>
+
+                    <button
+                    className="upload-image-btn"
+                    onClick={() => setShowPinModal(true)}
+                    >
+                    🔐 Change Secure PIN
+                    </button>
             </div>
         </div>
+                    {showPinModal && (
+            <div className="schedule-modal-overlay">
+                <div className="schedule-modal">
+
+                <h3>Change Secure PIN</h3>
+
+                <button
+                    onClick={async () => {
+
+                        const response = await sendOtp(user.email);
+
+                        if(response.success){
+                        toast.success("OTP Sent");
+                        }else{
+                        toast.error(response.message);
+                        }
+
+                    }}
+                    >
+                    Send OTP
+                    </button>
+
+                    <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    />
+                    <button
+                    onClick={async () => {
+                        const response = await verifyOtp(
+                        user.email,
+                        otp
+                        );
+                        if(response.success){
+                        setOtpVerified(true);
+                        toast.success("OTP Verified");
+                        }else{
+                        toast.error(response.message);
+                        }
+                    }}
+                    >
+                    Verify OTP
+                    </button>
+
+                    {otpVerified && (
+                    <>
+                        <input
+                        type="password"
+                        maxLength={4}
+                        placeholder="New PIN"
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value)}
+                        />
+
+                        <input
+                        type="password"
+                        maxLength={4}
+                        placeholder="Confirm PIN"
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value)}
+                        />
+
+                        <button
+                        onClick={async () => {
+
+                            if(newPin !== confirmPin){
+
+                            toast.error("PINs do not match");
+                            return;
+
+                            }
+
+                            if(!/^\d{4}$/.test(newPin)){
+                            toast.error("PIN must be exactly 4 digits");
+                            return;
+                            }
+                            const response = await changeSecurePin(newPin);
+
+                            if(response.success){
+
+                            toast.success("PIN Updated Successfully");
+
+                            setShowPinModal(false);
+
+                            setOtp("");
+                            setOtpVerified(false);
+                            setNewPin("");
+                            setConfirmPin("");
+
+                            }else{
+
+                            toast.error(response.message);
+
+                            }
+
+                        }}
+                        >
+                        Save PIN
+                        </button>
+                    </>
+                    )}
+
+                <button
+                    onClick={() => setShowPinModal(false)}
+                >
+                    Cancel
+                </button>
+
+                </div>
+            </div>
+            )}
     </div>
    )
 

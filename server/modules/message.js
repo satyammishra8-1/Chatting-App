@@ -41,6 +41,10 @@ const messageScema = new mongoose.Schema({
         type:String,
         default:""
      },
+     isSecureMessage:{
+    type:Boolean,
+    default:false
+    },
     deletedFor: {
         type: [String],
         default: []

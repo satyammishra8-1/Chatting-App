@@ -4,8 +4,9 @@ import ChatArea from "./components/chat";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
+import { hidePinPopup } from "../../apiCalls/users";
 
-const socket = io("https://quick-chat-app-qviu.onrender.com");
+const socket = io("http://localhost:3000");
 socket.on("connect", () => {
    console.log("SOCKET CONNECTED", socket.id);
 });
@@ -20,6 +21,7 @@ function Home() {
      const [mobileChatOpen, setMobileChatOpen] = useState(false);
      const [reminderText, setReminderText] = useState("");
      const [reminderData, setReminderData] = useState(null);
+     const [showPinInfoPopup, setShowPinInfoPopup] = useState(false);
      
 
      useEffect(() => {
@@ -109,6 +111,15 @@ function Home() {
           };
 
      }, [user]);
+     useEffect(() => {
+
+  if(user && !user.pinPopupShown){
+
+    setShowPinInfoPopup(true);
+
+  }
+
+          }, [user]);
 
      return (
           <div className="home-page">
@@ -183,8 +194,42 @@ function Home() {
                                    }
                               />
                          )}
+                    
 
                </div>
+               {showPinInfoPopup && (
+  <div className="schedule-modal-overlay">
+    <div className="schedule-modal">
+
+      <h3>🔐 Secure Message PIN</h3>
+           <p>
+          Your Secure Message PIN protects locked messages.
+          </p>
+          <p>
+          Default PIN: <b>1234</b>
+          </p>
+          <p>
+          Change it anytime from Profile → Change Secure PIN.
+          </p>
+      <p>
+        You can change it anytime from
+        Profile → Change Secure PIN.
+      </p>
+          <button
+          onClick={async () => {
+
+          await hidePinPopup();
+
+          setShowPinInfoPopup(false);
+
+          }}
+          >
+          OK
+          </button>
+
+    </div>
+  </div>
+                              )}
 
           </div>
      );

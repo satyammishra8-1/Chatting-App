@@ -1,4 +1,6 @@
 import { axiosInstance , url} from "./index";
+
+// New API call to get logged user details
 export const getLoggedUser = async () => {
     try {
         const response = await axiosInstance.get(url + "/api/user/get-logged-user");
@@ -8,6 +10,7 @@ export const getLoggedUser = async () => {
     }
 }
 
+// New API call to fetch all users
 export const getAllUsers = async () => {
     try {
         const response = await axiosInstance.get(url + "/api/user/get-all-users");
@@ -17,6 +20,7 @@ export const getAllUsers = async () => {
     }
 }
 
+// New API call to update profile picture
 export const uploadProfilePic = async (image) => {
     try {
         const response = await axiosInstance.post(url + "/api/user/upload-profile-pic", { image });
@@ -26,6 +30,7 @@ export const uploadProfilePic = async (image) => {
     }
 }
 
+// New API call to update preferred language
 export const updatePreferredLanguage = async (preferredLanguage) => {
     try {
 
@@ -39,4 +44,57 @@ export const updatePreferredLanguage = async (preferredLanguage) => {
     } catch (error) {
         return error;
     }
+};
+
+// New API call to verify secure pin
+export const verifySecurePin = async (pin) => {
+  try {
+
+    const response = await axiosInstance.post(
+      url + "/api/user/verify-secure-pin",
+      { pin }
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    return error.response.data;
+
+  }
+};
+
+// New API call to change secure pin
+export const changeSecurePin = async (pin) => {
+  try {
+
+    const response = await axiosInstance.post(
+      url + "/api/user/change-secure-pin",
+      { pin }
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    return error.response.data;
+
+  }
+};
+
+// New API call to hide pin popup
+export const hidePinPopup = async () => {
+  try {
+
+    const response = await axiosInstance.post(
+      url + "/api/user/hide-pin-popup"
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    return error.response.data;
+
+  }
 };
