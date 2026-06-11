@@ -1427,7 +1427,7 @@ const addReaction = async (messageId, emoji) => {
               setShowPinModal(true);
             }}
           >
-          🔓 Message lock
+          🔓 Message unlock
           </div>
         )}
 

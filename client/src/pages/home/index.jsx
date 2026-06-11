@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { hidePinPopup } from "../../apiCalls/users";
 
-const socket = io("http://localhost:3000");
+const socket = io("https://quick-chat-app-qviu.onrender.com");
 socket.on("connect", () => {
    console.log("SOCKET CONNECTED", socket.id);
 });
