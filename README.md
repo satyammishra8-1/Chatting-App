@@ -1,4 +1,7 @@
-QuickChat
+## Live Demo   🚀 https://chatting-app-gamma-blue.vercel.app
+
+
+### QuickChat
 
 A modern real-time communication and productivity platform built with React, Node.js, MongoDB, and Socket.IO.
 QuickChat goes beyond traditional messaging applications by combining secure communication, productivity tools,
